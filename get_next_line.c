@@ -43,7 +43,7 @@ char* st_construct_line(char*buff, char**result)
 
 	buff_len = st_getnl(buff);
 	if (buff_len == -1)
-		buff_len == BUFFER_SIZE;
+		buff_len = BUFFER_SIZE;
 	if (!*result)
 	{
 		*result = malloc(buff_len + 1);
@@ -67,6 +67,7 @@ char* st_get_result(t_line**lines, t_line*line, char*buff)
 	int bytes_read;
 	char	*result;
 
+	result = 0;
 	if (!st_construct_line(line->rem_line, &result))
 		return free_all(lines);
 	if (st_getnl(result) != -1)
@@ -91,22 +92,22 @@ char* st_get_result(t_line**lines, t_line*line, char*buff)
 
 char *get_next_line(int fd)
 {
-	static t_line** lines;
+	static t_line* lines;
 	t_line* line;
 	char *buff;
 	char*	res;
 
 	if (fd < 0)
 		return NULL;
-	line = st_get_line(lines, fd);
+	line = st_get_line(&lines, fd);
 	if (!lines)
-		line = st_add_fd(lines, fd);
+		line = st_add_fd(&lines, fd);
 	if (!line)
-		return free_all(lines);
+		return free_all(&lines);
 	buff = malloc(BUFFER_SIZE + 1);
 	if (!buff)
-		return free_all(lines);
-	res = st_get_result(lines, line, buff);
+		return free_all(&lines);
+	res = st_get_result(&lines, line, buff);
 	free(buff);
 	return res;
 }

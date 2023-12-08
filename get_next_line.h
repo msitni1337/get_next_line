@@ -16,11 +16,10 @@ typedef struct s_line
 } t_line;
 
 char *get_next_line(int fd);
-int st_getnl(const char *str);
-void	*free_all(t_line**head);
-void *free_line_node(t_line **lines, t_line*line);
-void	st_strcpyshift(char *dest, char *src, int n);
-int st_strlen(char *str);
+void *free_ptr(void*ptr, void*ptr1,void*ptr2, char**ptr3);
+char	*ft_substr(char const *s, long start, long len);
+char	*ft_strjoin(char const *s1, char const *s2);
+int ft_strlen(const char *str);
 
 
 #endif

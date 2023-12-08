@@ -2,6 +2,21 @@
 #include <stdio.h>
 #include <fcntl.h>
 
+
+/*
+int main()
+{
+	int fd = open("tests", O_RDONLY);
+	while(1)
+	{
+		char *line = get_next_line(fd);
+		printf("[\n");
+		printf("%s", line);
+		printf("]\n");
+	}
+}
+*/
+
 int main(int c, char**v)
 {
 	(void) c;

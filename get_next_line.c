@@ -1,113 +1,91 @@
 #include "get_next_line.h"
 
-t_line* st_add_fd(t_line **head, int fd)
+int st_getnl_index(const char *str)
 {
-	t_line* node;
+	int i;
 
-	node = malloc(sizeof(t_line));
-	if (!node)
-		return free_all(head);
-	node->rem_line = malloc(BUFFER_SIZE);
-	if (!node->rem_line)
-		return free_all(head);
-	node->rem_line[0] = 0;
-	node->fd = fd;
-	node->next = *head;
-	*head = node;
-	return node;
+	i = 0;
+	while (str && str[i] && str[i] != '\n')
+		i++;
+	if (str && str[i] == '\n')
+		return i;
+	return -1;
 }
 
-t_line* st_get_line(t_line**lines, int fd)
+char *ft_get_remainder(char**rem)
 {
-	t_line*line;
+	char *rem_tmp;
+	char *res;
 
-	if (!lines)
-		return NULL;
-	line = *lines;
-	while (line)
+	if (st_getnl_index(*rem) == -1)
 	{
-		if (line->fd == fd)
-			break;
-		line = line->next;
+		res = *rem;
+		*rem = NULL;
+		return res;
 	}
-	if (line)
-		return line;
-	return st_add_fd(lines, fd);
+	res = ft_substr(*rem, 0, st_getnl_index(*rem) + 1);
+	rem_tmp = ft_substr(*rem, st_getnl_index(*rem) + 1, ft_strlen(*rem));
+	free(*rem);
+	*rem = rem_tmp;
+	if (!rem_tmp)
+		return free_ptr(res, 0, 0, 0);
+	return (res);
 }
 
-char* st_construct_line(char*buff, char**result)
+int st_get_line(char**res, char**rem, int fd)
 {
-	char *line;
-	int result_len;
-	int buff_len;
-
-	buff_len = st_getnl(buff);
-	if (buff_len == -1)
-		buff_len = BUFFER_SIZE;
-	if (!*result)
+	char *buff;
+	char *result;
+	int chars_read;
+	
+	buff = malloc(BUFFER_SIZE + 1);
+	if (!buff)
+		return 0 && free_ptr(0, 0, 0, res);
+	chars_read = read(fd, buff, BUFFER_SIZE);
+	if (chars_read == -1)
+		return 0 && free_ptr(0, buff, 0, res);
+	buff[chars_read] = 0;
+	if (st_getnl_index(buff) != -1)
 	{
-		*result = malloc(buff_len + 1);
-		if (*result)
-			st_strcpyshift(*result, buff, st_getnl(buff));
-		return *result;
+		result = ft_strjoin(*res, ft_substr(buff, 0, st_getnl_index(buff) + 1));
+		*rem = ft_substr(buff, st_getnl_index(buff) + 1, ft_strlen(buff));
+		if (!*rem || !result)
+			return 0 && free_ptr(buff, 0, result, res);
 	}
-	result_len = st_strlen(*result);
-	line = malloc(result_len + buff_len +1);
-	if (!line)
-		return NULL;
-	st_strcpyshift(line, *result, result_len);
-	st_strcpyshift(line + result_len, buff, buff_len);
-	free(*result);
-	*result = line;
-	return line;
-}
-
-char* st_get_result(t_line**lines, t_line*line, char*buff)
-{
-	int bytes_read;
-	char	*result;
-
-	result = 0;
-	if (!st_construct_line(line->rem_line, &result))
-		return free_all(lines);
-	if (st_getnl(result) != -1)
-		return result;
-	while (st_getnl(result) == -1)
-	{	
-		bytes_read = read(line->fd, buff, BUFFER_SIZE);
-		if (bytes_read <= 0)
-			break;
-		buff[bytes_read] = 0;
-		if(!st_construct_line(buff, &result))
-			return free_all(lines);
-	}
-	if (bytes_read == -1)
-		return free_all(lines);
-	if (!bytes_read)
-		free_line_node(lines, line);
 	else
-		st_strcpyshift(line->rem_line, buff, BUFFER_SIZE);	
-	return result;
+	{
+		result = ft_strjoin(*res, buff);
+	}
+	free_ptr(0, buff, 0, res);
+	*res = result;
+	return chars_read;
 }
 
 char *get_next_line(int fd)
 {
-	static t_line* lines;
-	t_line* line;
-	char *buff;
+	static char *line_remain;
 	char*	res;
-
+	int bytes_read;
+	
 	if (fd < 0)
 		return NULL;
-	line = st_get_line(&lines, fd);
-	if (!lines)
-		line = st_add_fd(&lines, fd);
-	if (!line)
-		return free_all(&lines);
-	buff = malloc(BUFFER_SIZE + 1);
-	if (!buff)
-		return free_all(&lines);
-	res = st_get_result(&lines, line, buff);
-	free(buff);
+	res = 0;
+	while (st_getnl_index(res) == -1)
+	{
+		if (line_remain)
+		{
+			res = ft_get_remainder(&line_remain);
+			if (!res)
+				return NULL;
+			continue ;
+		}
+		bytes_read = st_get_line(&res, &line_remain, fd);
+		if (!res)
+			return NULL;
+		if (!bytes_read && !line_remain && (!res || !*res))
+			return free_ptr(res, 0, 0, 0);
+		else if (!bytes_read && !line_remain)
+			break;
+	}
 	return res;
 }

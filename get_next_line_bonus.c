@@ -64,28 +64,28 @@ int	st_get_line(char **res, char **rem, int fd, char *tmp)
 
 char	*get_next_line(int fd)
 {
-	static char	*line_remain;
+	static char	*line_remain[8000];
 	char		*res;
 	int			bytes_read;
 
-	if (fd < 0)
+	if (fd < 0 || fd >= 1024)
 		return (NULL);
 	res = 0;
 	while (st_getnl_index(res) == -1)
 	{
-		if (line_remain)
+		if (line_remain[fd])
 		{
-			res = ft_get_remainder(&line_remain);
+			res = ft_get_remainder(&(line_remain[fd]));
 			if (!res)
 				return (NULL);
 			continue ;
 		}
-		bytes_read = st_get_line(&res, &line_remain, fd, 0);
+		bytes_read = st_get_line(&res, &(line_remain[fd]), fd, 0);
 		if (!res)
 			return (NULL);
-		if (!bytes_read && !line_remain && (!res || !*res))
+		if (!bytes_read && !line_remain[fd] && (!res || !*res))
 			return (free_ptr(res, 0, 0, 0));
-		else if (!bytes_read && !line_remain)
+		else if (!bytes_read && !line_remain[fd])
 			break ;
 	}
 	return (res);

@@ -31,8 +31,11 @@ char	*ft_substr(char const *s, long start, long len)
 {
 	char	*str;
 	int	i;
-
-	str = malloc(len + 1);
+	
+	if (len < ft_strlen(s))
+		str = malloc(len + 1);
+	else
+		str = malloc(ft_strlen(s) + 1);
 	if (!str)
 		return (NULL);
 	i = 0;
@@ -45,7 +48,7 @@ char	*ft_substr(char const *s, long start, long len)
 	return (str);
 }
 
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(char *s1, char *s2)
 {
 	char	*str;
 	int		s1_len;

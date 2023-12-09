@@ -17,9 +17,10 @@ char *ft_get_remainder(char**rem)
 	char *rem_tmp;
 	char *res;
 
-	if (st_getnl_index(*rem) == -1)
+	if (st_getnl_index(*rem) == -1 || st_getnl_index(*rem) + 1  == ft_strlen(*rem))
 	{
-		res = *rem;
+		res = ft_substr(*rem, 0, ft_strlen(*rem));
+		free(*rem);
 		*rem = NULL;
 		return res;
 	}
@@ -32,7 +33,7 @@ char *ft_get_remainder(char**rem)
 	return (res);
 }
 
-int st_get_line(char**res, char**rem, int fd)
+int st_get_line(char**res, char**rem, int fd, char*tmp)
 {
 	char *buff;
 	char *result;
@@ -40,23 +41,22 @@ int st_get_line(char**res, char**rem, int fd)
 	
 	buff = malloc(BUFFER_SIZE + 1);
 	if (!buff)
-		return 0 && free_ptr(0, 0, 0, res);
+		return 0 || free_ptr(0, 0, 0, res);
 	chars_read = read(fd, buff, BUFFER_SIZE);
 	if (chars_read == -1)
-		return 0 && free_ptr(0, buff, 0, res);
+		return 0 || free_ptr(0, buff, 0, res);
 	buff[chars_read] = 0;
 	if (st_getnl_index(buff) != -1)
 	{
-		result = ft_strjoin(*res, ft_substr(buff, 0, st_getnl_index(buff) + 1));
+		tmp = ft_substr(buff, 0, st_getnl_index(buff) + 1);
+		result = ft_strjoin(*res, tmp);
 		*rem = ft_substr(buff, st_getnl_index(buff) + 1, ft_strlen(buff));
 		if (!*rem || !result)
-			return 0 && free_ptr(buff, 0, result, res);
+			return 0 || free_ptr(buff, 0, result, res);
 	}
 	else
-	{
 		result = ft_strjoin(*res, buff);
-	}
-	free_ptr(0, buff, 0, res);
+	free_ptr(tmp, buff, 0, res);
 	*res = result;
 	return chars_read;
 }
@@ -79,7 +79,7 @@ char *get_next_line(int fd)
 				return NULL;
 			continue ;
 		}
-		bytes_read = st_get_line(&res, &line_remain, fd);
+		bytes_read = st_get_line(&res, &line_remain, fd, 0);
 		if (!res)
 			return NULL;
 		if (!bytes_read && !line_remain && (!res || !*res))

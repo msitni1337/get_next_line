@@ -2,21 +2,21 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-
-/*
-int main()
+int main(int c, char**v)
 {
-	int fd = open("tests", O_RDONLY);
-	while(1)
+	int fd = open(v[1], O_RDONLY);
+	char *line = get_next_line(fd);
+	while(line)
 	{
-		char *line = get_next_line(fd);
-		printf("[\n");
-		printf("%s", line);
-		printf("]\n");
+//		printf("[\n");
+//		printf("%s", line);
+//		printf("]\n");
+		free(line);
+		line = get_next_line(fd);
 	}
+	dump_unfreed_ptr();
 }
-*/
-
+/*
 int main(int c, char**v)
 {
 	(void) c;
@@ -51,3 +51,4 @@ int main(int c, char**v)
 		}
 	}
 }
+*/
